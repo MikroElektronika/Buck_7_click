@@ -1,0 +1,78 @@
+'
+'Example for BUCK7 Click
+'
+'    Date          : jun 2018.
+'    Author        : Katarina Perendic
+'
+'Test configuration PIC :
+'    
+'    MCU             : P18F87K22
+'    Dev. Board      : EasyPIC PRO v7
+'    PIC Compiler ver : v7.2.0.0
+'
+'---
+'
+'Description :
+'
+'The application is composed of three sections :
+'
+'- System Initialization - Initializes SPI module and set AN,RST,CS and PWM pin as OUTPUT
+'- Application Initialization - Initializes Driver init, reset chip, enable chip and set mode
+'- Application Task - (code snippet) - Sets output voltage to 5V, 10V, 15V, 20V, 25V every 3 seconds.
+'                                      It is necessary to set the input voltage on 2.7V + maximum output voltage.
+'
+'
+program Click_BUCK7_PIC
+
+include Click_BUCK7_types
+include Click_BUCK7_config
+
+sub procedure systemInit() 
+
+    mikrobus_gpioInit(_MIKROBUS1, _MIKROBUS_AN_PIN, _GPIO_OUTPUT) 
+    mikrobus_gpioInit(_MIKROBUS1, _MIKROBUS_RST_PIN, _GPIO_OUTPUT) 
+    mikrobus_gpioInit(_MIKROBUS1, _MIKROBUS_CS_PIN, _GPIO_OUTPUT) 
+    mikrobus_gpioInit(_MIKROBUS1, _MIKROBUS_PWM_PIN, _GPIO_OUTPUT) 
+    mikrobus_spiInit(_MIKROBUS1, @_BUCK7_SPI_CFG[0]) 
+    Delay_ms(100) 
+
+end sub
+
+sub procedure applicationInit() 
+
+    buck7_spiDriverInit(T_BUCK7_P(@_MIKROBUS1_GPIO), T_BUCK7_P(@_MIKROBUS1_SPI)) 
+    buck7_enable() 
+    buck7_setMode(_BUCK7_MODE_PWM) 
+
+end sub
+
+sub procedure applicationTask() 
+
+    buck7_setOutputVoltage(_BUCK7_OUT_VOLTAGE_5V) 
+    Delay_ms(3000) 
+    buck7_setOutputVoltage(_BUCK7_OUT_VOLTAGE_10V) 
+    Delay_ms(3000) 
+    buck7_setOutputVoltage(_BUCK7_OUT_VOLTAGE_15V) 
+    Delay_ms(3000) 
+    buck7_setOutputVoltage(_BUCK7_OUT_VOLTAGE_20V) 
+    Delay_ms(3000) 
+    buck7_setOutputVoltage(_BUCK7_OUT_VOLTAGE_25V) 
+    Delay_ms(3000) 
+    buck7_setOutputVoltage(_BUCK7_OUT_VOLTAGE_20V) 
+    Delay_ms(3000) 
+    buck7_setOutputVoltage(_BUCK7_OUT_VOLTAGE_15V) 
+    Delay_ms(3000) 
+    buck7_setOutputVoltage(0x0BB8) 
+    Delay_ms(3000) 
+
+end sub
+
+main :
+
+    systemInit() 
+    applicationInit() 
+    while (1) 
+        applicationTask() 
+    wend
+
+end.
